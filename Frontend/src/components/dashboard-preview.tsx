@@ -1,20 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart2, Activity, Cpu, ShieldCheck, Check, ArrowRight, LayoutDashboard } from "lucide-react";
+import { BarChart2, Activity, Cpu, ShieldCheck, Check, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 
 export function DashboardPreview() {
-  const [activeTab, setActiveTab] = useState("analytics");
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   return (
     <section id="preview" className="py-20 lg:py-28 bg-zinc-50/70 border-b border-zinc-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -32,12 +24,7 @@ export function DashboardPreview() {
 
         {/* Tab Controls */}
         <div className="max-w-4xl mx-auto">
-          {!isMounted ? (
-            <div className="h-64 bg-white rounded-2xl border border-zinc-200 shadow-xl flex items-center justify-center text-zinc-400 text-sm">
-              Loading Product Tour...
-            </div>
-          ) : (
-            <Tabs defaultValue="analytics" onValueChange={setActiveTab} className="w-full space-y-8">
+            <Tabs defaultValue="analytics" className="w-full space-y-8">
             <TabsList className="grid grid-cols-2 md:grid-cols-4 bg-white p-1.5 rounded-xl border border-zinc-200 shadow-xs h-auto gap-1">
               <TabsTrigger
                 value="analytics"
@@ -250,7 +237,6 @@ export function DashboardPreview() {
               </div>
             </TabsContent>
           </Tabs>
-          )}
         </div>
       </div>
     </section>

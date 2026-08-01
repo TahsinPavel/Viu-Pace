@@ -1,26 +1,136 @@
 @import "tailwindcss";
 
+/* ViuPace design tokens — see DESIGN.md ("The Investigation Docket").
+   The shadcn/base-nova semantic layer was never installed; it is defined here so
+   ui/* primitives (bg-primary, border-border, text-muted-foreground, ring) resolve
+   instead of silently falling back. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Documentary neutrals: panel chrome -> paper ground -> inset field -> instrument plate */
+  --paper: #ffffff;
+  --panel: #f4f5f7;
+  --field: #fafbfc;
+  --plate: #14181c;
+  --plate-grid: #232a31;
+  --plate-ink: #f7f8f9;
+  --plate-ink-muted: #b3bcc4;
+
+  --ink: #14181c;
+  --ink-secondary: #566069; /* 6.42:1 on paper */
+  --ink-muted: #6b757e; /* 4.70:1 on paper — lightest legal body gray */
+  --rule: #e2e5e9;
+  --rule-strong: #cdd2d8;
+
+  /* Investigator's marker ink. Never encodes status. */
+  --signal: #a5228c;
+  --signal-field: #fbf2f8;
+  --signal-edge: #eccce3;
+
+  /* Reserved status scale. Each verified for text contrast on paper; always
+     shipped with a glyph + label, never color alone (see DESIGN.md). */
+  --drop: #c0362c; /* 5.52:1 */
+  --rewatch: #0f7a45; /* 5.40:1 */
+  --caution: #9a6400; /* 5.00:1 */
+  --drop-field: #fdf3f2;
+  --rewatch-field: #f0f8f4;
+  --caution-field: #fbf6ea;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+
+  /* shadcn semantic layer */
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--panel);
+  --secondary-foreground: var(--ink);
+  --muted: var(--panel);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--signal-field);
+  --accent-foreground: var(--signal);
+  --destructive: var(--drop);
+  --destructive-foreground: var(--paper);
+  --border: var(--rule);
+  --input: var(--rule-strong);
+  --ring: var(--signal);
+
+  --radius: 10px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-field: var(--field);
+  --color-plate: var(--plate);
+  --color-plate-grid: var(--plate-grid);
+  --color-plate-ink: var(--plate-ink);
+  --color-plate-ink-muted: var(--plate-ink-muted);
+
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+
+  --color-signal: var(--signal);
+  --color-signal-field: var(--signal-field);
+  --color-signal-edge: var(--signal-edge);
+
+  --color-drop: var(--drop);
+  --color-rewatch: var(--rewatch);
+  --color-caution: var(--caution);
+  --color-drop-field: var(--drop-field);
+  --color-rewatch-field: var(--rewatch-field);
+  --color-caution-field: var(--caution-field);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* No prefers-color-scheme override: ViuPace is a committed white workspace, and a
+   dark mode needs its own validated steps rather than an automatic flip. */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

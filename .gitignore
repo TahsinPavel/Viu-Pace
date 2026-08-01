@@ -2,3 +2,9 @@
 skills-lock.json
 .codex
 .impeccable
+agents
+.claude
+gsd-core
+.gsd-profile
+gsd-file-manifest.json
+gsd-install-state.json

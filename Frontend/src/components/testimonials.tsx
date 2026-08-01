@@ -1,5 +1,5 @@
-import { Star, Quote } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const testimonials = [
   {
@@ -51,7 +51,7 @@ export function Testimonials() {
                   ))}
                 </div>
                 <p className="text-sm text-zinc-700 leading-relaxed italic">
-                  "{item.quote}"
+                  &ldquo;{item.quote}&rdquo;
                 </p>
               </div>
 

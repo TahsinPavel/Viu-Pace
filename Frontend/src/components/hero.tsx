@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Play, ShieldCheck, Zap, BarChart3, Users, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Play, ShieldCheck, Zap, BarChart3, CheckCircle2 } from "lucide-react";
 
 export function Hero() {
   return (
