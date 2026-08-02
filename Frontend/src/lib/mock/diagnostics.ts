@@ -58,7 +58,21 @@ export interface Recommendation {
   alternates?: string[];
 }
 
+/**
+ * Every finding carries a `headline`: the plain sentence a reader sees first.
+ *
+ * House rules for this string, applied without exception:
+ * - State what happened with numbers, never a vague comparison.
+ * - Say plainly whether it is good or bad; never make the reader infer it.
+ * - Banned words: ceiling, percentile, median, packaging, spike threshold.
+ * - A metric keeps one name everywhere in the app. It is always "channel
+ *   average", never "channel median" or "your usual". The early-drop bar is
+ *   always "normal limit". Anything compared against similar videos is
+ *   "videos like yours".
+ * - Two short sentences maximum, at a level a 12-year-old can follow.
+ */
 export interface BoredomLocator {
+  headline: string;
   /** Percentage of the audience lost inside the early-drop window. */
   earlyDropPct: number;
   /** The early-drop window for this content type, in seconds. */
@@ -74,6 +88,8 @@ export interface BoredomLocator {
 }
 
 export interface FlopFinder {
+  /** Plain sentence, first thing read. See BoredomLocator.headline for rules. */
+  headline: string;
   impressions: number;
   views: number;
   ctr: number;
@@ -81,6 +97,8 @@ export interface FlopFinder {
   nicheMedianCtr: number;
   /** Impressions percentile against the channel's own catalogue. */
   impressionsPercentile: number;
+  /** The percentile said in words, because the number alone is jargon. */
+  reachPlain: string;
   verdict: string;
   recommendation: Recommendation;
 }
@@ -100,6 +118,8 @@ export interface LackingRow {
 }
 
 export interface LackingReport {
+  /** Plain sentence, first thing read. See BoredomLocator.headline for rules. */
+  headline: string;
   subNiche: string;
   reference: {
     title: string;
@@ -117,6 +137,8 @@ export interface LackingReport {
  * taller bar there before it counts as a rewatch event.
  */
 export interface ViralityBlueprint {
+  /** Plain sentence, first thing read. See BoredomLocator.headline for rules. */
+  headline: string;
   /** Percentage-point gain a segment must clear to register as a spike. */
   spikeThreshold: number;
   /** Share of playbacks that reached the strongest spike. */
@@ -133,6 +155,8 @@ export interface ViralityBlueprint {
  * seconds, Shorts on the first 3–5, because the swipe decision arrives sooner.
  */
 export interface EarlyDrop {
+  /** Plain sentence, first thing read. See BoredomLocator.headline for rules. */
+  headline: string;
   /** Window length in seconds for this content type. */
   window: number;
   /** Percentage points lost inside the window. */
@@ -153,6 +177,11 @@ export interface EarlyDrop {
  * is deliberately not a demographics breakdown.
  */
 export interface AudienceBehavior {
+  /**
+   * The panel gets its own plain sentence, same rules as a finding headline —
+   * a reader should not have to compare two bars to learn what happened.
+   */
+  headline: string;
   /** The checkpoint both cohorts are read at, in seconds. */
   at: number;
   cohorts: {
@@ -183,6 +212,8 @@ export interface SearchTerm {
 }
 
 export interface Discoverability {
+  /** Plain sentence, first thing read. See BoredomLocator.headline for rules. */
+  headline: string;
   /** Share of total views arriving from YouTube search. */
   searchShare: number;
   /** The other named traffic sources, for context on how much search can move. */
@@ -200,6 +231,8 @@ export interface Discoverability {
  * converting gets a stand-down instead of three titles it does not need.
  */
 export interface AssetRescue {
+  /** Plain sentence, first thing read. See BoredomLocator.headline for rules. */
+  headline: string;
   eligible: boolean;
   /** Why the engine ran, or why it stood down. */
   gate: string;
@@ -395,10 +428,12 @@ const longFormReport: DiagnosticReport = {
   views: 18420,
   vsChannelMedian: -61,
   probableCause:
-    "Packaging carried the impressions; a 90-second context block at 4:10 lost the audience that clicked.",
+    "Most viewers left 4 minutes in, during 90 seconds of backstory.",
   primaryFailure: "retention",
   confidence: "high",
   boredomLocator: {
+    headline:
+      "Viewers started leaving at 4:10. You lost 20 out of every 100 viewers over the next 90 seconds.",
     earlyDropPct: 23.2,
     earlyDropWindow: 30,
     earlyDropThreshold: 30,
@@ -413,7 +448,7 @@ const longFormReport: DiagnosticReport = {
         transcript:
           "…before I get into the build, a bit of history: this space used to be a single-car garage, and back in 2019 when I first moved in I had almost no tools at all, just a circular saw and…",
         reading:
-          "Narration turns retrospective 4 minutes in, before any build step is shown. 20.4 points lost across 90 seconds with no cut, no on-screen change, and no restatement of the payoff.",
+          "Here you start telling the story of the garage, 4 minutes in, before you have built anything. For the next 90 seconds there is no cut and nothing new on screen.",
       },
       {
         kind: "rewatch",
@@ -423,28 +458,30 @@ const longFormReport: DiagnosticReport = {
         transcript:
           "…and that's the whole bench, flat to within half a millimetre, for thirty-one dollars in plywood.",
         reading:
-          "The one measured, quantified result in the video. Viewers scrubbed back to re-read the number on screen.",
+          "This is the only place you say a number out loud while that number is on screen. Viewers went back to read it again.",
       },
     ],
     checkpoints: [
-      { label: "0:30 hook", at: 30, threshold: 70, measured: 76.8 },
-      { label: "1:30 setup", at: 90, threshold: 62, measured: 68.4 },
-      { label: "4:00 mid", at: 240, threshold: 55, measured: 60.6 },
-      { label: "6:00 mid-late", at: 360, threshold: 48, measured: 37.9 },
-      { label: "10:00 late", at: 600, threshold: 38, measured: 31.1 },
+      { label: "0:30", at: 30, threshold: 70, measured: 76.8 },
+      { label: "1:30", at: 90, threshold: 62, measured: 68.4 },
+      { label: "4:00", at: 240, threshold: 55, measured: 60.6 },
+      { label: "6:00", at: 360, threshold: 48, measured: 37.9 },
+      { label: "10:00", at: 600, threshold: 38, measured: 31.1 },
       { label: "End", at: 872, threshold: 28, measured: 20.4 },
     ],
     recommendation: {
-      action: "Cut 4:10–5:40 and move the bench result to 3:55.",
+      action: "Delete 4:10 to 5:40. Move the finished bench to 3:55 instead.",
       rationale:
-        "The 90-second history block sits between the click and the first payoff. The segment viewers rewatched at 7:42 is the one that should arrive before the mid-video checkpoint.",
+        "The 90 seconds you cut is backstory. The bench is the part people came for.",
       asset: {
-        label: "Pacing note for the next edit",
-        body: "Open the build within 45 seconds. Put the flat-to-half-a-millimetre bench result at 3:55, where retention is still above 60%. Any backstory that survives gets cut to two sentences and moved after the first finished piece — never before it.",
+        label: "For your next video",
+        body: "Start building in the first 45 seconds. Keep any backstory to two sentences, and put it after you show something finished, never before.",
       },
     },
   },
   viralityBlueprint: {
+    headline:
+      "Viewers went back and rewatched 7:42 to 8:18. Only 35 out of every 100 viewers got that far.",
     // Long-form curves are smoother than Shorts, so a smaller gain still counts.
     spikeThreshold: 4,
     reachedShare: 35.4,
@@ -457,22 +494,25 @@ const longFormReport: DiagnosticReport = {
         transcript:
           "…and that's the whole bench, flat to within half a millimetre, for thirty-one dollars in plywood.",
         reading:
-          "The only quantified result in 14 minutes. 5.8 points of recovery against a 4-point threshold, and the shape is scrub-back traffic: viewers returned to re-read the tolerance and the price on screen.",
+          "You say the price and the measurement while both are on screen. That is the only time in 14 minutes you do this, and it is the only time viewers came back.",
       },
     ],
     pattern:
-      "The single spike is a number said out loud while the same number is on screen. Retention recovers where a claim becomes measurable, and nowhere else in the video does that happen.",
+      "Viewers rewatch the moment a claim becomes a number they can see. That happens once in this video.",
     recommendation: {
-      action: "Write the next build around seven quantified beats and put each number on screen as it is said.",
+      action:
+        "Put a price or a measurement on screen every two minutes. Start before 0:45.",
       rationale:
-        "Only 35.4% of playbacks reached the one moment that worked. The pattern is reusable — it just needs to arrive while the audience is still present.",
+        "Only 35 of every 100 viewers reached the moment that worked. It needs to arrive while people are still watching.",
       asset: {
-        label: "Reusable beat",
-        body: "State a price, a tolerance, or a time saved, and cut to the number on screen in the same breath. Place the first one before 0:45 and repeat every two minutes. The bench line at 7:42 is the template: claim, number, proof, cut.",
+        label: "How to repeat it",
+        body: "Say a price, a size, or a time saved, and show that number on screen as you say it. The bench line at 7:42 is the example to copy.",
       },
     },
   },
   earlyDrop: {
+    headline:
+      "You lost 23% of viewers in the first 30 seconds. That is under the normal limit of 30%, so your opening is fine.",
     // Long-form is judged on the first 30 seconds.
     window: 30,
     pct: 23.2,
@@ -480,29 +520,33 @@ const longFormReport: DiagnosticReport = {
     measured: 76.8,
     channelAvgPct: 17.4,
     verdict:
-      "23.2 points lost inside the 30-second window, under the 30-point ceiling for long-form. The opening is not the failure — it runs 5.8 points behind the channel average, which is inside normal variance. The audience this video lost, it lost at 4:10.",
+      "Long videos normally lose up to 30% in the first 30 seconds. You lost 23%, so the opening passed. It is 6% behind your channel average, which is a normal difference. The viewers you lost, you lost at 4:10.",
     recommendation: {
-      action: "Leave the intro alone and spend the edit on 4:10–5:40 instead.",
+      action: "Leave your opening as it is. Spend your editing time on 4:10 to 5:40.",
       rationale:
-        "The hook cleared its gate. Rewriting an opening that already holds 76.8% would spend effort where there is no measured gap, while the 20.4-point bleed four minutes in goes unaddressed.",
+        "Your opening keeps 77 of every 100 viewers. There is nothing to fix there.",
     },
   },
   flopFinder: {
+    headline:
+      "This video was seen a lot but clicked very little. Only 3 out of every 100 people who saw it clicked, and your channel average is 6.",
     impressions: 412000,
     views: 18420,
     ctr: 3.1,
     channelAvgCtr: 6.4,
     nicheMedianCtr: 5.8,
     impressionsPercentile: 88,
+    reachPlain: "YouTube showed this video to more people than usual for your channel.",
     verdict:
-      "Impressions landed in the channel's top 12%, so distribution was not the constraint. CTR came in 3.3 points under the channel average — the thumbnail and title did not convert the reach they were given.",
+      "YouTube showed this video to 412,000 people, which is a lot for your channel. So getting seen was not the problem. Out of every 100 people who saw it, only 3 clicked. Your channel usually gets 6. The title and the picture are what stopped them.",
     recommendation: {
-      action: "Reshoot the thumbnail around the $900 figure and the finished bench.",
+      action:
+        "Make a new thumbnail showing the finished bench with “$900” on it.",
       rationale:
-        "The current thumbnail shows the room mid-clearout, before anything is built. The number is the only claim in the title doing work, and it appears nowhere in the image.",
+        "Your thumbnail shows an empty room before anything is built. The $900 in your title is the reason people click, and it is not in the picture.",
       asset: {
-        label: "Thumbnail concept",
-        body: "Finished bench, shot square-on at eye level, warm work light from the left. “$900” set large in the top-right third over the empty wall, no face, no arrow, no outline. The build result and the price are the only two things in frame.",
+        label: "Thumbnail idea",
+        body: "The finished bench, shot straight on at eye level, warm light from the left. “$900” written large in the top-right corner. No face, no arrow, no outline.",
       },
       alternates: [
         "The $900 Workshop (Everything Is Plywood)",
@@ -512,6 +556,8 @@ const longFormReport: DiagnosticReport = {
     },
   },
   discoverability: {
+    headline:
+      "3 of your top 5 search terms appear nowhere in your title, description, or tags.",
     searchShare: 21.4,
     otherSources: [
       { label: "Browse features", share: 44.8 },
@@ -565,54 +611,57 @@ const longFormReport: DiagnosticReport = {
       },
     ],
     recommendation: {
-      action: "Name the bench build in the first line of the description and add the four bench tags.",
+      action:
+        "Write “plywood workbench” in the first line of your description, and add it as a tag.",
       rationale:
-        "The two queries bringing the most search traffic are both about the bench, and neither the title, the description, nor the tags mention a bench at all. Search is finding this video despite the metadata, not because of it.",
+        "The two search terms bringing you the most viewers are both about the bench. The word “bench” is not in your title, your description, or your tags.",
       asset: {
-        label: "Description opening + tags to add",
-        body: "First line: “A flat plywood workbench, built for $31 in material, inside a $900 small-garage workshop rebuild — full bench plans and cut list below.” Add tags: plywood workbench, workbench build, cheap workshop bench, diy workbench plans. Drop “diy” on its own; it is too broad to rank and it is already implied.",
+        label: "What to write",
+        body: "First line: “A flat plywood workbench, built for $31, inside a $900 workshop rebuild. Full plans and cut list below.” Add these tags: plywood workbench, workbench build, cheap workshop bench, diy workbench plans. Remove the tag “diy” on its own, it is too general to help.",
       },
     },
   },
   assetRescue: {
+    headline: "Here are 3 better titles and 3 thumbnail ideas to try.",
     eligible: true,
     gate:
-      "Flop Finder measured CTR 3.3 points under the channel average on top-12% impressions, so packaging is the confirmed gap. The engine ran.",
+      "Your click rate is 3.3% below your channel average, so the title and picture are worth changing. That is why these were written.",
     titles: [
       {
         text: "The $900 Workshop (Everything Is Plywood)",
-        angle: "Leads on the price, then names the constraint that makes it credible.",
+        angle: "Leads with the price, then says what made it possible.",
       },
       {
         text: "I Built a Whole Workshop for the Price of One Table Saw",
-        angle: "Comparison hook — reframes the number against something the audience already prices.",
+        angle: "Compares the price to something viewers already know the cost of.",
       },
       {
         text: "$900 Workshop: Flat to Half a Millimetre",
-        angle: "Pairs the price with the tolerance claim that produced the video's one rewatch spike.",
+        angle: "Puts the price next to the measurement viewers rewatched.",
       },
     ],
     thumbnails: [
       {
-        label: "Concept A — the result, priced",
-        body: "Finished bench square-on at eye level, warm work light from the left. “$900” set large in the top-right third over the empty wall. No face, no arrow, no outline.",
+        label: "Thumbnail A — the finished bench and the price",
+        body: "The finished bench, straight on at eye level, warm light from the left. “$900” large in the top-right corner. No face, no arrow, no outline.",
       },
       {
-        label: "Concept B — the tolerance",
-        body: "Close crop on a straightedge across the benchtop with a feeler gauge at the gap. “0.5mm” in the corner. Sells precision rather than price, matching the rewatched moment.",
+        label: "Thumbnail B — the measurement",
+        body: "Close-up of a straightedge across the bench top with a gauge in the gap. “0.5mm” in the corner. Sells how well it is made instead of the price.",
       },
       {
-        label: "Concept C — before and after",
-        body: "Hard vertical split: cleared garage left, finished workshop right, same camera position and focal length so the change reads instantly. “$900” on the seam.",
+        label: "Thumbnail C — before and after",
+        body: "Split down the middle: empty garage on the left, finished workshop on the right, same camera position so the change is obvious. “$900” on the line between them.",
       },
     ],
     recommendation: {
-      action: "Ship Concept A with the first title, and hold Concept B for the follow-up.",
+      action:
+        "Use title 1 with thumbnail A. Change nothing else for 14 days.",
       rationale:
-        "The current thumbnail shows the room mid-clearout, before anything is built, so the only claim doing work is a number that appears nowhere in the image. Concept A puts the result and the price in the same frame.",
+        "Thumbnail A puts the finished bench and the price in one picture. Your current one shows an empty room.",
       asset: {
-        label: "Swap to run",
-        body: "Replace the thumbnail with Concept A and the title with “The $900 Workshop (Everything Is Plywood)”. Leave the video untouched for 14 days and compare impressions CTR against the 6.4% channel average before changing anything else — one variable at a time or the read is worthless.",
+        label: "Why wait 14 days",
+        body: "Change one thing at a time. If you change the title and the picture and the description together, you will not know which one worked. After 14 days, compare the click rate against your 6.4% channel average.",
       },
       // No `alternates` here: the three titles are the evidence of this finding
       // and are already listed above with their angles. This recommendation
@@ -620,15 +669,19 @@ const longFormReport: DiagnosticReport = {
     },
   },
   audienceBehavior: {
+    headline:
+      "At 4 minutes, 74 out of every 100 returning viewers were still watching, but only 54 out of every 100 new viewers. 68% of this audience was new.",
     at: 240,
     cohorts: [
       { label: "New viewers", share: 68, retention: 54.1, emphasis: true },
       { label: "Returning viewers", share: 32, retention: 74.5, emphasis: false },
     ],
     reading:
-      "At the 4:00 checkpoint, returning viewers held 20.4 points higher than new ones. The history block that opens at 4:10 is context your subscribers already have — the 68% of this audience meeting you for the first time left during it.",
+      "At 4:00, 74 out of every 100 returning viewers were still watching, but only 54 out of every 100 new viewers. The garage story that starts at 4:10 is something your regular viewers already know. Most of this audience, 68%, was watching you for the first time.",
   },
   lackingReport: {
+    headline:
+      "Your best video cuts almost 3 times as often and shows almost 5 times as many numbers on screen.",
     subNiche: "Small-workshop build documentation",
     reference: {
       title: "Every Jig I Use, Built in One Weekend",
@@ -645,7 +698,7 @@ const longFormReport: DiagnosticReport = {
         referenceValue: 38,
         scale: { min: 0, max: 300 },
         higherIsBetter: false,
-        note: "The reference video starts cutting material before the title card.",
+        note: "Your best video starts cutting wood before the title even appears.",
       },
       {
         metric: "Cuts per minute",
@@ -654,34 +707,34 @@ const longFormReport: DiagnosticReport = {
         referenceValue: 11.6,
         scale: { min: 0, max: 14 },
         higherIsBetter: true,
-        note: "Long static takes over narration; the reference cuts on every completed action.",
+        note: "You hold long still shots while talking. Your best video cuts every time something is finished.",
       },
       {
-        metric: "Quantified claims",
-        unit: "claims",
+        metric: "Numbers shown on screen",
+        unit: "numbers",
         value: 3,
         referenceValue: 14,
         scale: { min: 0, max: 16 },
         higherIsBetter: true,
-        note: "Measurements and prices on screen. Your one rewatch spike was a quantified claim.",
+        note: "Prices and measurements shown on screen. The one moment viewers rewatched was a number.",
       },
       {
-        metric: "Average view duration",
+        metric: "How long people watch",
         unit: "m:ss",
         value: 214,
         referenceValue: 486,
         scale: { min: 0, max: 540 },
         higherIsBetter: true,
-        note: "Reference holds viewers 4.5 minutes longer at a comparable length.",
+        note: "Both videos are about the same length, but your best one keeps people 4 minutes longer.",
       },
     ],
     recommendation: {
-      action: "Front-load one quantified result per two minutes of runtime.",
+      action: "Show one price or measurement every two minutes.",
       rationale:
-        "Both videos cover the same sub-niche at a similar length. The reference carries 14 on-screen numbers to your 3, and your single retention recovery came at your only measurement.",
+        "Both videos are about the same thing and the same length. Your best one shows 14 numbers on screen, this one shows 3.",
       asset: {
-        label: "Structure note",
-        body: "Storyboard the next build as seven quantified beats — a price, a tolerance, or a time saved every two minutes. Show each number on screen as it is said. Cut any passage longer than 40 seconds that contains no measurable claim.",
+        label: "How to plan the next one",
+        body: "Before you film, write down seven moments where you say a price, a size, or a time saved. Show each number on screen as you say it. If any part runs longer than 40 seconds with no number in it, cut it.",
       },
     },
   },
@@ -700,10 +753,12 @@ const shortsReport: DiagnosticReport = {
   views: 42600,
   vsChannelMedian: -44,
   probableCause:
-    "A third of the audience left inside the first 3 seconds — the trick is named at 0:06, four seconds after the swipe decision was made.",
+    "A third of viewers swiped away in the first 3 seconds, before you showed the clamp.",
   primaryFailure: "retention",
   confidence: "high",
   boredomLocator: {
+    headline:
+      "You lost 34 out of every 100 viewers in the first 3 seconds. You do not show the clamp until 0:06.",
     earlyDropPct: 33.9,
     earlyDropWindow: 3,
     earlyDropThreshold: 25,
@@ -717,7 +772,7 @@ const shortsReport: DiagnosticReport = {
         delta: -33.9,
         transcript: "Hey — so, quick one today. I get asked about clamps a lot, and…",
         reading:
-          "Three seconds of greeting and framing before the subject appears. Shorts viewers decide inside this window; 33.9 points lost against a 25-point threshold.",
+          "You spend the first 3 seconds saying hello. Viewers decide whether to swipe in exactly those 3 seconds, and a third of them left.",
       },
       {
         kind: "rewatch",
@@ -726,28 +781,30 @@ const shortsReport: DiagnosticReport = {
         delta: +8.3,
         transcript: "— and it holds a mitre square without touching the face.",
         reading:
-          "The payoff frame. The spike past 100% of the preceding second is loop-back traffic: viewers replayed the reveal.",
+          "This is where you show the clamp working. Viewers played it again to watch it a second time.",
       },
     ],
     checkpoints: [
-      { label: "0:03 swipe", at: 3, threshold: 75, measured: 66.1 },
-      { label: "0:05 hook", at: 5, threshold: 68, measured: 59.2 },
-      { label: "0:10 hold", at: 10, threshold: 58, measured: 53.4 },
-      { label: "0:20 mid", at: 20, threshold: 50, measured: 48.6 },
-      { label: "0:35 payoff", at: 35, threshold: 44, measured: 44.8 },
-      { label: "Loop", at: 47, threshold: 40, measured: 38.4 },
+      { label: "0:03", at: 3, threshold: 75, measured: 66.1 },
+      { label: "0:05", at: 5, threshold: 68, measured: 59.2 },
+      { label: "0:10", at: 10, threshold: 58, measured: 53.4 },
+      { label: "0:20", at: 20, threshold: 50, measured: 48.6 },
+      { label: "0:35", at: 35, threshold: 44, measured: 44.8 },
+      { label: "End", at: 47, threshold: 40, measured: 38.4 },
     ],
     recommendation: {
-      action: "Open on the clamp already holding the mitre square. Cut the greeting entirely.",
+      action: "Start with the clamp already holding the square. Delete the greeting.",
       rationale:
-        "The frame viewers looped back to at 0:38 is the frame that should be at 0:00. Nothing before 0:06 shows the subject.",
+        "The moment viewers replayed at 0:38 is the moment that should open the video. Nothing before 0:06 shows the clamp.",
       asset: {
-        label: "First-second rewrite",
-        body: "Frame 1: the clamp holding the square, mid-shot, already in tension. Voice starts on the claim, not the greeting — “This holds a mitre square without touching the face.” Name the $12 price at 0:02, demonstrate by 0:04.",
+        label: "How to open it",
+        body: "First frame: the clamp holding the square, already tight. Your first words are the claim, not hello — “This holds a mitre square without touching the face.” Say the $12 price at 0:02 and show it working by 0:04.",
       },
     },
   },
   viralityBlueprint: {
+    headline:
+      "Viewers replayed the clamp demo at 0:38. Only 45 out of every 100 viewers got that far.",
     // Shorts swing harder by construction, so the bar for a spike sits higher.
     spikeThreshold: 7,
     reachedShare: 44.8,
@@ -759,22 +816,24 @@ const shortsReport: DiagnosticReport = {
         delta: +8.3,
         transcript: "— and it holds a mitre square without touching the face.",
         reading:
-          "The payoff frame. The gain past the preceding second is loop-back traffic: viewers replayed the reveal rather than swiping on.",
+          "This is where the clamp does the thing you promised. Viewers played it again instead of swiping away.",
       },
     ],
     pattern:
-      "The single spike is the demonstration itself, with no words over it. Retention rises the moment the clamp does the thing the title promised.",
+      "Viewers replay the moment you show the clamp working, with no talking over it. That happens once, near the end.",
     recommendation: {
-      action: "Make the loop seam the demonstration, not the sign-off.",
+      action: "End on the same shot you start on, and delete the sign-off.",
       rationale:
-        "8.3 points of loop-back on a 47-second Short is a strong signal, and it lands on a silent demonstration. The last three seconds currently break that loop with a verbal outro.",
+        "Viewers replay the demo, but your last 3 seconds are a goodbye. That breaks the replay.",
       asset: {
-        label: "Loop seam",
-        body: "End on the same frame you open on — clamp in tension on the square. Cut the “thanks for watching” tail entirely so frame 47 matches frame 0 and the replay is seamless.",
+        label: "How to make it loop",
+        body: "Make the last frame the same as the first frame: the clamp tight on the square. Cut the “thanks for watching” at the end so the video runs straight back into itself.",
       },
     },
   },
   earlyDrop: {
+    headline:
+      "You lost 34 out of every 100 viewers in the first 3 seconds. The normal limit is 25, so this is the problem.",
     // Shorts are judged on the swipe window, not the first 30 seconds.
     window: 3,
     pct: 33.9,
@@ -782,33 +841,38 @@ const shortsReport: DiagnosticReport = {
     measured: 66.1,
     channelAvgPct: 18.6,
     verdict:
-      "33.9 points lost inside the 3-second swipe window, against a 25-point ceiling for Shorts. This is the primary failure: the subject does not appear on screen until 0:06, three seconds after the decision was already made.",
+      "Short videos normally lose up to 25 out of every 100 viewers in the first 3 seconds. You lost 34. This is the main thing to fix: the clamp does not appear on screen until 0:06, and by then most people had already swiped away.",
     recommendation: {
-      action: "Put the clamp on screen in frame one and cut the greeting.",
+      action: "Put the clamp on screen in the very first frame. Delete the greeting.",
       rationale:
-        "Nothing before 0:06 shows the subject. The window that decides a Short's distribution closed at 0:03, while the video was still saying hello.",
+        "Nothing before 0:06 shows the clamp. Viewers had already decided to leave by 0:03, while you were still saying hello.",
       asset: {
-        label: "First-second rewrite",
-        body: "Frame 1: the clamp holding the square, mid-shot, already in tension. Voice starts on the claim — “This holds a mitre square without touching the face.” Price at 0:02, demonstration complete by 0:04.",
+        label: "How to open it",
+        body: "First frame: the clamp holding the square, already tight. Your first words are the claim — “This holds a mitre square without touching the face.” Price at 0:02, and show it working by 0:04.",
       },
     },
   },
   flopFinder: {
+    headline:
+      "3.4 out of every 100 people who saw this clicked it. Your channel average is 4.1, so the title and picture are working fine.",
     impressions: 1240000,
     views: 42600,
     ctr: 3.4,
     channelAvgCtr: 4.1,
     nicheMedianCtr: 3.9,
     impressionsPercentile: 71,
+    reachPlain: "YouTube showed this Short to a lot of people, more than usual for your channel.",
     verdict:
-      "Shorts CTR sits 0.7 points under the channel average — inside normal variance for the format. Packaging is not the primary failure here; the first three seconds are.",
+      "YouTube showed this Short to 1,240,000 people. Out of every 100 who saw it, 3.4 clicked, and your channel usually gets 4.1. That is a normal difference for a Short. The title and the picture are not the problem here. The first 3 seconds are.",
     recommendation: {
-      action: "Leave the packaging alone. Fix the opening frame instead.",
+      action: "Leave the title and picture alone. Fix the first 3 seconds instead.",
       rationale:
-        "CTR is within variance and the feed served 1.24M impressions. Rewriting a title that is already converting would spend effort where there is no measured gap.",
+        "People are clicking this Short at your normal rate. Changing a title that already works would not fix anything.",
     },
   },
   discoverability: {
+    headline:
+      "Your top search term, “mitre square clamp trick”, is not in your title, description, or tags.",
     // Shorts are a feed format: search moves far less here than on long-form.
     searchShare: 6.8,
     otherSources: [
@@ -854,37 +918,43 @@ const shortsReport: DiagnosticReport = {
       },
     ],
     recommendation: {
-      action: "Put “mitre square” in the title and add it to the tags.",
+      action: "Put “mitre square” in your title and add it as a tag.",
       rationale:
-        "Search is only 6.8% of this video's traffic, so this is the smaller lever — but the top query names a tool that appears in none of the three metadata fields, and the title's “nobody shows you” carries no query at all.",
+        "Search only brings 7 out of every 100 viewers to this Short, so this is a small fix. But the words people search for most are not in your title, description, or tags at all.",
       asset: {
-        label: "Title + tags to change",
-        body: "Title: “The $12 clamp that holds a mitre square”. Add tags: mitre square, clamp trick, no-mar clamping, square clamping jig. Keep the description line as-is — “without marring” is already the only phrase pulling a query.",
+        label: "What to change",
+        body: "New title: “The $12 clamp that holds a mitre square”. Add these tags: mitre square, clamp trick, no-mar clamping, square clamping jig. Leave your description as it is, “without marring” is already bringing you viewers.",
       },
     },
   },
   assetRescue: {
+    headline:
+      "No new titles or thumbnails needed. People are already clicking this Short at your normal rate.",
     eligible: false,
     gate:
-      "Flop Finder measured CTR inside normal variance for Shorts, 0.7 points off the channel average on 1.24M impressions. Packaging is not the gap, so the engine stood down rather than generating three titles this video does not need.",
+      "Your click rate is 3.4 out of every 100 people, and your channel average is 4.1. That is a normal difference, so the title and picture are not worth changing. Nothing was written for this.",
     titles: [],
     thumbnails: [],
     recommendation: {
-      action: "Do not regenerate packaging. Re-run this engine only if the 3-second fix lands and CTR then falls behind.",
+      action: "Do not change the title or picture. Fix the first 3 seconds first.",
       rationale:
-        "The feed served this Short 1.24 million impressions and 3.4% of them clicked, which is what a working title does. The measured failure is 33.9 points lost in the swipe window — replacing the title would not move it.",
+        "YouTube showed this Short to 1,240,000 people and they clicked at your normal rate, which is what a working title does. The real problem is the 34 out of every 100 viewers you lose in the first 3 seconds. A new title would not change that.",
     },
   },
   audienceBehavior: {
+    headline:
+      "At 3 seconds, 85 out of every 100 returning viewers were still watching, but only 64 out of every 100 new viewers. 91% of this audience was new.",
     at: 3,
     cohorts: [
       { label: "New viewers", share: 91, retention: 64.3, emphasis: true },
       { label: "Returning viewers", share: 9, retention: 84.5, emphasis: false },
     ],
     reading:
-      "At the 0:03 swipe checkpoint, returning viewers held 20.2 points higher — they wait through a greeting because they know the channel. 91% of this Short's audience does not, and that is the cohort the opening has to earn.",
+      "At 0:03, 85 out of every 100 returning viewers were still watching, but only 64 out of every 100 new viewers. People who know you will sit through a greeting. Almost everyone here, 91%, had never seen your channel before, and they will not.",
   },
   lackingReport: {
+    headline:
+      "Your best Short shows the subject in the first frame. This one waits 6 seconds.",
     subNiche: "Workshop tips (Shorts)",
     reference: {
       title: "Stop cutting plywood like this",
@@ -901,43 +971,43 @@ const shortsReport: DiagnosticReport = {
         referenceValue: 0,
         scale: { min: 0, max: 8 },
         higherIsBetter: false,
-        note: "The reference opens on the mistake itself, mid-cut, with no preamble.",
+        note: "Your best Short opens on the mistake itself, mid-cut, with no talking first.",
       },
       {
-        metric: "Words before the claim",
+        metric: "Words before the point",
         unit: "words",
         value: 17,
         referenceValue: 3,
         scale: { min: 0, max: 20 },
         higherIsBetter: false,
-        note: "Seventeen words of greeting cost the swipe decision.",
+        note: "Seventeen words of hello, and viewers had already decided to swipe.",
       },
       {
-        metric: "3-second retention",
+        metric: "Still watching at 3 seconds",
         unit: "%",
         value: 66.1,
         referenceValue: 89.4,
         scale: { min: 0, max: 100 },
         higherIsBetter: true,
-        note: "The single metric that separates these two videos most sharply.",
+        note: "This is the biggest difference between the two videos.",
       },
       {
-        metric: "Loop rate",
+        metric: "Viewers who replayed it",
         unit: "%",
         value: 8.3,
         referenceValue: 22.1,
         scale: { min: 0, max: 26 },
         higherIsBetter: true,
-        note: "Your payoff loops; it just arrives too late for most of the audience to see it.",
+        note: "People do replay your clamp demo. It just comes too late for most of them to see it.",
       },
     ],
     recommendation: {
-      action: "Put the payoff frame first and let the explanation follow it.",
+      action: "Show the clamp working first, then explain how it works.",
       rationale:
-        "The reference states its claim in three words over the demonstration. Your video explains for six seconds, then demonstrates.",
+        "Your best Short makes its point in three words while showing you. This one explains for 6 seconds before showing anything.",
       asset: {
-        label: "Structure note",
-        body: "Demonstrate, then explain — never the reverse in a Short. Frame 1 shows the result, words 1–3 name it, the how-to fills the remaining 40 seconds. Keep the loop-back frame identical to the opening frame so the replay is seamless.",
+        label: "How to structure it",
+        body: "Show it first, explain second, never the other way round in a Short. First frame shows the result, your first three words name it, and the how-to fills the remaining 40 seconds. Make the last frame the same as the first so it replays smoothly.",
       },
     },
   },

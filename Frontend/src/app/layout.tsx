@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ViuPace - Real-Time SaaS Execution & Pacing Platform",
-  description: "Accelerate your workflow with real-time pace intelligence, predictive telemetry, and automated workflows.",
+  title: "ViuPace — Find out why the video failed",
+  description:
+    "A diagnostic report for one underperforming YouTube video: the second viewers left, what was being said when they did, and one thing to change before the next upload.",
 };
 
 export default function RootLayout({

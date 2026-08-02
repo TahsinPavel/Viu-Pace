@@ -1,39 +1,24 @@
-import { Navbar } from "@/components/navbar";
-import { Hero } from "@/components/hero";
-import { Features } from "@/components/features";
-import { DashboardPreview } from "@/components/dashboard-preview";
-import { Pricing } from "@/components/pricing";
-import { Testimonials } from "@/components/testimonials";
-import { CTASection } from "@/components/cta-section";
-import { Footer } from "@/components/footer";
+import { Header } from "@/components/marketing/header";
+import { Hero } from "@/components/marketing/hero";
+import { Findings } from "@/components/marketing/findings";
+import { Method } from "@/components/marketing/method";
+import { Scope } from "@/components/marketing/scope";
+import { Pricing } from "@/components/marketing/pricing";
+import { CTA } from "@/components/marketing/cta";
+import { Footer } from "@/components/marketing/footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white font-sans text-zinc-900 selection:bg-blue-600 selection:text-white">
-      {/* Navbar with Top Right Dashboard Button */}
-      <Navbar />
-
+    <div className="min-h-screen bg-paper font-sans text-ink">
+      <Header />
       <main>
-        {/* Hero Section */}
         <Hero />
-
-        {/* Core Features */}
-        <Features />
-
-        {/* Live Interactive Product Preview */}
-        <DashboardPreview />
-
-        {/* SaaS Pricing Plans */}
+        <Findings />
+        <Method />
+        <Scope />
         <Pricing />
-
-        {/* Customer Testimonials */}
-        <Testimonials />
-
-        {/* High-Impact CTA */}
-        <CTASection />
+        <CTA />
       </main>
-
-      {/* Footer */}
       <Footer />
     </div>
   );
