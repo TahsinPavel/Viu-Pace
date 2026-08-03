@@ -47,13 +47,22 @@ Styling is Tailwind v4 via `@tailwindcss/postcss` — there is no `tailwind.conf
 
 ## Backend architecture
 
-Three modules, deliberately thin:
+Four modules, deliberately thin:
 
-- `app/config.py` — pydantic-settings `Settings` read from `Backend/.env` (see `.env.example`). The `async_database_url` property normalizes `postgresql://` / `postgres://` to `postgresql+asyncpg://`, so a raw Neon connection string can be pasted in unmodified. `DEBUG` also drives SQLAlchemy `echo`.
+- `app/config.py` — pydantic-settings `Settings` read from `Backend/.env` (see `.env.example`). The `async_database_url` property normalizes `postgresql://` / `postgres://` to `postgresql+asyncpg://` **and strips `sslmode` / `channel_binding`** from the query string, so a raw Neon connection string can be pasted in unmodified — asyncpg's `connect()` rejects those libpq-only params as kwargs. `async_connect_args` re-applies the TLS requirement as `ssl=`, and is passed to both the app engine and Alembic's. `DEBUG` also drives SQLAlchemy `echo`. `YOUTUBE_CLIENT_ID` / `_SECRET` / `_REFRESH_TOKEN` hold the single-channel OAuth credentials; `youtube_configured` reports whether all three are set.
 - `app/database.py` — the async engine (`pool_pre_ping=True`, `pool_recycle=300`, tuned for Neon's serverless connection behavior), `AsyncSessionLocal`, the `Base` declarative class for models, and the `get_db()` dependency. `get_db()` **commits on successful exit and rolls back on exception** — route handlers should not commit themselves.
 - `app/main.py` — app factory with a `lifespan` handler that disposes the engine on shutdown, permissive CORS (`allow_origins=["*"]`, flagged for production tightening), and the health routes.
+- `app/models.py` — the YouTube data layer: one `Content` table plus five time-series tables (`metrics_snapshot`, `retention`, `traffic`, `engagement`, `audience`). Every time-series row carries `captured_at`, so ingestion **appends snapshots rather than overwriting** — that history is what powers trend-over-time diagnosis. Each is indexed on `(content_id, captured_at)` for the "latest snapshot" lookup. Metric columns are nullable on purpose: the Analytics API omits impressions/CTR for some videos, and 0 ≠ "not reported".
 
-There are no models, routers, or migrations yet. When adding them, subclass `Base` from `app/database.py`, inject sessions with `Depends(get_db)`, and mount routers on `app` in `main.py`. No migration tool (Alembic) is installed — pick and set one up before relying on `Base.metadata`.
+Alembic is set up and the initial migration (`77fb940a2353`) is applied to Neon. `alembic/env.py` runs async via `create_async_engine` and reads the URL from `settings` at each use site rather than through `config.set_main_option` — a literal `%` in a percent-encoded Neon password would otherwise be read back as a broken ConfigParser interpolation token. The `sqlalchemy.url` placeholder in `alembic.ini` is never used.
+
+```bash
+alembic revision --autogenerate -m "message"   # from Backend/, venv active
+alembic upgrade head
+alembic current
+```
+
+There are no routers yet. When adding them, inject sessions with `Depends(get_db)` and mount routers on `app` in `main.py`.
 
 The frontend does not call the backend anywhere yet: there is no `fetch`, no API client, and no `NEXT_PUBLIC_*` base URL. Wiring the two together is greenfield.
 

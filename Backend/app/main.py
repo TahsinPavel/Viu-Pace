@@ -10,11 +10,12 @@ from app.database import get_db, engine, Base
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup actions
-    print(f"🚀 Starting {settings.APP_NAME}...")
+    # Startup actions. Plain ASCII: the Windows console defaults to cp1252,
+    # which cannot encode emoji, and an exception here aborts startup entirely.
+    print(f"Starting {settings.APP_NAME}...")
     yield
     # Shutdown actions
-    print(f"🛑 Shutting down {settings.APP_NAME}...")
+    print(f"Shutting down {settings.APP_NAME}...")
     await engine.dispose()
 
 
